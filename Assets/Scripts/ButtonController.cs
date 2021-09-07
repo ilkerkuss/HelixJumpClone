@@ -68,4 +68,10 @@ public class ButtonController : MonoBehaviour
         GameManager.Instance.TapToStart();
 
     }
+
+    public void OnClickPlayGame()
+    {
+        GameManager.Instance.CloseHomeScreen();
+        GameManager.Instance.RestartGame();
+    }
 }

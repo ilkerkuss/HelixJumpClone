@@ -25,6 +25,9 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private Slider _gameProgressBar;
 
+    [SerializeField] private GameObject _homeScreenPanel;
+    [SerializeField] private Text _highScoreText;
+
     private int _currentLevel;
 
     private void Awake()
@@ -52,6 +55,8 @@ public class GameManager : MonoBehaviour
         _isGamePaused = false;
         _isGameOver = false;
         _isGameMuted=false;
+
+        _homeScreenPanel.SetActive(true);
 
         GenerateLevel();
     }
@@ -148,6 +153,8 @@ public class GameManager : MonoBehaviour
         _scoreText.gameObject.SetActive(false);
         _gameOverPanel.SetActive(true);
 
+        _highScoreText.text = "HighScore" + "\n" + PlayerPrefs.GetInt("HighScore", 0).ToString();
+
         _gameProgressBar.value = 0;
 
         AudioController.Instance.StopSound("BackgroundSound");
@@ -211,6 +218,11 @@ public class GameManager : MonoBehaviour
     {
         _gameProgressBar.transform.GetChild(2).GetChild(0).GetComponent<Text>().text = PlayerPrefs.GetInt("Level",0).ToString();  //current level text
         _gameProgressBar.transform.GetChild(3).GetChild(0).GetComponent<Text>().text = (PlayerPrefs.GetInt("Level", 0) + 1).ToString();  //next level text
+    }
+
+    public void CloseHomeScreen()
+    {
+        _homeScreenPanel.SetActive(false);
     }
 }
 
