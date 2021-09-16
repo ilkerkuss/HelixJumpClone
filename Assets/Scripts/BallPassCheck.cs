@@ -9,10 +9,12 @@ public class BallPassCheck : MonoBehaviour
     private GameObject _final;
 
 
+
     void Start()
     {
         _ball = GameObject.FindGameObjectWithTag("Ball");
         _final = GameObject.FindGameObjectWithTag("Final");
+
 
     }
 
@@ -24,6 +26,11 @@ public class BallPassCheck : MonoBehaviour
             Destroy(gameObject);
             ScoreController.Instance.addScore(PlayerPrefs.GetInt("Level",0));  //addscore according to level value
             GameManager.Instance.SetGameProgressBar(1/26f);  //ring amount
+
+            BallController.Instance._perfectRingPass += 1;
+
         }
     }
+
+
 }

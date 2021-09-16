@@ -67,7 +67,7 @@ public class GameManager : MonoBehaviour
         //Debug.Log("Pause"+_isGamePaused);
         //Debug.Log("Isgamestarted"+_isGameStarted);
         //Debug.Log("Isgamemuted"+_isGameMuted);
-        Debug.Log(PlayerPrefs.GetInt("Level", 0));
+        //Debug.Log(PlayerPrefs.GetInt("Level", 0));
         SetLevelText();
     }
 

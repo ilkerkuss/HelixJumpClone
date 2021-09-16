@@ -12,6 +12,12 @@ public class BallController : MonoBehaviour
 
     [SerializeField] private GameObject _splashPrefab;
 
+    public bool _isBallTouchGround;
+
+    private bool _isSuperBall;
+
+    public int _perfectRingPass;
+
     private void Awake()
     {
         if (Instance==null)
@@ -25,17 +31,23 @@ public class BallController : MonoBehaviour
         BallPosition = transform.position;
 
         _jumpForce = 5f;
+
+        _perfectRingPass = 0;
+        _isBallTouchGround = false;
     }
 
 
     void Update()
     {
-        
+        //Debug.Log("yerde mi : " + _isBallTouchGround);
+        Debug.Log("pass sayý : " + _perfectRingPass);
+        Debug.Log("süper top : " + _isSuperBall);
+
+        SuperBallCheck();
     }
 
     private void OnCollisionEnter(Collision other)
     {
-        //_rb.AddForce(Vector3.up * _jumpForce);
         _rb.velocity = Vector3.up * _jumpForce ;
 
         //instantiate splash efect
@@ -45,23 +57,62 @@ public class BallController : MonoBehaviour
         AudioController.Instance.PlaySound("SplashSound");
         Destroy(splash,2.5f);
 
-        //Debug.Log(other.gameObject.GetComponent<Renderer>().material.name);
 
 
-        if (other.gameObject.GetComponent<Renderer>().material.name== "Final_Plat_Mat (Instance)")
+        _isBallTouchGround = true; //collision olduðunda top yere deðdi mi
+        _perfectRingPass = 0;   // top yere deðince ring  perfect geçme sayýsý sýfýrla
+
+
+        if (_isSuperBall)
         {
-            Debug.Log("Tebrikler,bölümü geçtiniz.");
+            if (!(other.gameObject.GetComponent<Renderer>().material.name == "Final_Plat_Mat (Instance)")) 
+            {
+                Destroy(other.transform.parent.gameObject);
+                ScoreController.Instance.addScore(PlayerPrefs.GetInt("Level", 0));  //addscore according to level value
 
-            GameManager.Instance.LevelPassed();
-            //ScoreController.Instance.ResetScore();
+            }
+            
         }
-        else if (other.gameObject.GetComponent<Renderer>().material.name == "Unsafe_Platform (Instance)")
+        else
         {
-            //Debug.Log("Kaybettiniz.");
-              
-            GameManager.Instance.GameOver();
-            ScoreController.Instance.ResetScore();
+            if (other.gameObject.GetComponent<Renderer>().material.name == "Final_Plat_Mat (Instance)")
+            {
+                Debug.Log("Tebrikler,bölümü geçtiniz.");
+
+                GameManager.Instance.LevelPassed();
+                //ScoreController.Instance.ResetScore();
+            }
+            else if (other.gameObject.GetComponent<Renderer>().material.name == "Unsafe_Platform (Instance)")
+            {
+                //Debug.Log("Kaybettiniz.");
+
+                GameManager.Instance.GameOver();
+                ScoreController.Instance.ResetScore();
+            }
+
         }
+        
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        _isBallTouchGround = false;  //top collision iþleminden çýktý mý yani havalandý mý
+    }
+
+
+
+    private void SuperBallCheck()  // if the ball pass 3 ring without touching to platform ,ball become superball
+    {
+        if (_perfectRingPass >= 3)
+        {
+            _isSuperBall = true;
+
+        }
+        else
+        {
+            _isSuperBall = false;
+        }
+
     }
 
 }
