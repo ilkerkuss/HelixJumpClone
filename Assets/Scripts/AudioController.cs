@@ -10,7 +10,6 @@ public class AudioController : MonoBehaviour
     private AudioSource _audioSource;
     
 
-
     private void Awake()
     {
         if (Instance == null)

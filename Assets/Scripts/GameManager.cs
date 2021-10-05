@@ -8,25 +8,23 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance;
     
     [SerializeField] private GameObject _levelCylinder;
-    [SerializeField] private GameObject _ball;
+    [SerializeField] private BallController _ball;
+
+    public BallController CurrentBall; 
 
     [SerializeField] private Material _unsafeMat;
 
-    private bool _isGameStarted;
-    private bool _isGamePaused;
-    private bool _isGameOver;
+    public enum GameStates
+    {
+        IsGameLoaded,
+        IsGamePlaying,
+        IsGameOver,
+        IsGamePaused
+    }
+
+    public GameStates GameState;
+
     private bool _isGameMuted;
-
-    [SerializeField] private GameObject _gameOverPanel;
-    [SerializeField] private Text _scoreText;
-    [SerializeField] private GameObject _buttonParent;
-    [SerializeField] private GameObject _tapToStartButton;
-    [SerializeField] private GameObject _levelPassedPanel;
-
-    [SerializeField] private Slider _gameProgressBar;
-
-    [SerializeField] private GameObject _homeScreenPanel;
-    [SerializeField] private Text _highScoreText;
 
     private int _currentLevel;
 
@@ -48,146 +46,146 @@ public class GameManager : MonoBehaviour
     }
     void Start()
     {
-        Time.timeScale = 0;
-
-        _currentLevel = PlayerPrefs.GetInt("Level", 1); ;
-        _isGameStarted = false;
-        _isGamePaused = false;
-        _isGameOver = false;
-        _isGameMuted=false;
-
-        _homeScreenPanel.SetActive(true);
-
-        GenerateLevel();
+        Init();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        //Debug.Log("Pause"+_isGamePaused);
-        //Debug.Log("Isgamestarted"+_isGameStarted);
-        //Debug.Log("Isgamemuted"+_isGameMuted);
-        //Debug.Log(PlayerPrefs.GetInt("Level", 0));
-        SetLevelText();
+        if (GameState == GameStates.IsGamePlaying)
+        {
+            InGameCanvasController.Instance.SetLevelText();
+        }
+        
+
     }
 
-    private void GenerateLevel() //random level generator
-    {      
+    #region Level Generate Functions
 
-        GameObject Levelcylinder = Instantiate(_levelCylinder,new Vector3(0,-45,0),Quaternion.identity);
+    private void GenerateLevel() //random level generator
+    {
+        BallController ball = Instantiate(_ball,_ball.transform.position,_ball.transform.rotation);
+        CameraController.Instance.SetTarget(ball);
+        CurrentBall = ball;
+
+        GameObject Levelcylinder = Instantiate(_levelCylinder, new Vector3(0, -45, 0), Quaternion.identity);
         Levelcylinder.transform.GetChild(0).GetChild(3).gameObject.SetActive(false);  //baþlangýç halkasý hazýrlama
 
         //random ring generation after begining ring
-        for (int i = 1; i < Levelcylinder.transform.childCount-1; i++)
+        for (int i = 1; i < Levelcylinder.transform.childCount - 1; i++)
         {
-            for (int j = 0; j < Random.Range(1,6); j++)
+            for (int j = 0; j < Random.Range(1, 6); j++)
             {
                 if (Levelcylinder.transform.GetChild(i).GetChild(j).gameObject != null)
                 {
-                    Levelcylinder.transform.GetChild(i).GetChild(Random.Range(1,6)).gameObject.SetActive(false);
+                    Levelcylinder.transform.GetChild(i).GetChild(Random.Range(1, 6)).gameObject.SetActive(false);
                 }
-                
+
             }
 
             //assign unsafe platform randomly after begining ring
-            for (int k = 1; k < Levelcylinder.transform.childCount-1; k++)
+            for (int k = 1; k < Levelcylinder.transform.childCount - 1; k++)
             {
-                for (int l = 0; l < Random.Range(0,4); l++) // halka içinde max 4 unsafe platform olabilir
+                for (int l = 0; l < Random.Range(0, 4); l++) // halka içinde max 4 unsafe platform olabilir
                 {
-                    Levelcylinder.transform.GetChild(k).GetChild(Random.Range(1,6)).gameObject.GetComponent<Renderer>().material = _unsafeMat;
+                    Levelcylinder.transform.GetChild(k).GetChild(Random.Range(1, 6)).gameObject.GetComponent<Renderer>().material = _unsafeMat;
                 }
-                
+
             }
         }
 
-        
+
     }
-
-
-
 
     private void ResetLevel()
     {
-        Destroy(GameObject.FindGameObjectWithTag("Cylinder")); 
+        Destroy(GameObject.FindGameObjectWithTag("Cylinder"));
+        Destroy(GameObject.FindGameObjectWithTag("Ball"));
     }
-
+/*
     private void ResetBall()
     {
         _ball.transform.position = BallController.Instance.BallPosition;
         _ball.GetComponent<TrailRenderer>().Clear(); // clear trailrenderer points after reset position of ball
     }
+*/
+    #endregion
 
-    public void TapToStart()
-    {
-        _isGameStarted = true;
-        Time.timeScale = 1;
 
-        _tapToStartButton.SetActive(false);
-    }
+    #region Game Event Functions
 
-    public void RestartGame() 
+    public void RestartGame()
     {
         ResetLevel();
-        ResetBall();
+        //ResetBall();
         GenerateLevel();
 
-        _tapToStartButton.SetActive(true);
-        _buttonParent.SetActive(true);
-        _scoreText.gameObject.SetActive(true);
-        _gameOverPanel.SetActive(false);
-        _levelPassedPanel.SetActive(false);
+        GameState = GameStates.IsGameLoaded;
 
-        _gameProgressBar.value = 0;
+        InGameCanvasController.Instance.ActivateTapToStartButton();
+        CanvasController.Instance.InGamePanel.ShowPanel();
+        InGameCanvasController.Instance.ResetProgressBar();
+
+
+        CanvasController.Instance.GameOverPanel.HidePanel();
+        CanvasController.Instance.LevelPassedPanel.HidePanel();
 
         AudioController.Instance.PlaySound("BackgroundSound");
     }
 
     public void GameOver()
     {
-        Time.timeScale = 0;
+        GameState = GameStates.IsGameOver;
 
+        InGameCanvasController.Instance.ResetProgressBar();
+        CanvasController.Instance.InGamePanel.HidePanel();
 
-        _isGameOver = true;
-        _isGameStarted = false;
-        _buttonParent.SetActive(false);
-        _scoreText.gameObject.SetActive(false);
-        _gameOverPanel.SetActive(true);
-
-        _highScoreText.text = "HighScore" + "\n" + PlayerPrefs.GetInt("HighScore", 0).ToString();
-
-        _gameProgressBar.value = 0;
+        CanvasController.Instance.GameOverPanel.ShowPanel();
+        GameOverPanelController.Instance.SetHighScoreText();
 
         AudioController.Instance.StopSound("BackgroundSound");
         AudioController.Instance.PlaySound("GameOverSound");
 
     }
+
     public void LevelPassed()
     {
-        Time.timeScale = 0;
+        PlayerPrefs.SetInt("Level", _currentLevel + 1);
 
-        PlayerPrefs.SetInt("Level",_currentLevel+1);
-        SetLevelText();
+        GameState = GameStates.IsGameOver;
 
-        _isGameStarted = false;
-        
-        _buttonParent.SetActive(false);
-        _scoreText.gameObject.SetActive(false);
-        _levelPassedPanel.SetActive(true);
+
+        InGameCanvasController.Instance.SetLevelText();
+        CanvasController.Instance.InGamePanel.HidePanel();
+
+
+        CanvasController.Instance.LevelPassedPanel.ShowPanel();
 
         AudioController.Instance.StopSound("BackgroundSound");
         AudioController.Instance.PlaySound("CheerSound");
 
     }
 
-    public bool GetIsGamePaused()
+    #endregion
+
+    public void TapToStart()  
     {
-        return _isGamePaused;
+        GameState = GameStates.IsGamePlaying;
+
+        InGameCanvasController.Instance.DisableTapToStartButton();
     }
 
-    public void SetIsGamePaused(bool Boolvalue)
+    private void Init()
     {
-         _isGamePaused = Boolvalue;
+        _currentLevel = PlayerPrefs.GetInt("Level", 1);
+        InGameCanvasController.Instance.SetLevelText();
+
+        _isGameMuted = false;
+
+        GameState = GameStates.IsGameLoaded;
+        GenerateLevel();
     }
+
+    #region Sound Mute Functions
 
     public bool GetIsGameMuted()
     {
@@ -198,7 +196,10 @@ public class GameManager : MonoBehaviour
     {
         _isGameMuted = Boolvalue;
     }
+    #endregion
 
+
+    #region Current Level Get/Set
     public int GetCurrentLevel()
     {
         return _currentLevel;
@@ -209,20 +210,10 @@ public class GameManager : MonoBehaviour
         _currentLevel = value;
     }
 
-    public void SetGameProgressBar(float value)
-    {
-        _gameProgressBar.value += value;
-    }
 
-    public void SetLevelText()
-    {
-        _gameProgressBar.transform.GetChild(2).GetChild(0).GetComponent<Text>().text = PlayerPrefs.GetInt("Level",0).ToString();  //current level text
-        _gameProgressBar.transform.GetChild(3).GetChild(0).GetComponent<Text>().text = (PlayerPrefs.GetInt("Level", 0) + 1).ToString();  //next level text
-    }
+    #endregion
 
-    public void CloseHomeScreen()
-    {
-        _homeScreenPanel.SetActive(false);
-    }
+
+
 }
 

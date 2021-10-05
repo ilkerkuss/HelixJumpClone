@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BallPassCheck : MonoBehaviour
 {
-    private GameObject _ball;
+    private BallController _ball;
 
     private GameObject _final;
 
@@ -12,24 +12,33 @@ public class BallPassCheck : MonoBehaviour
 
     void Start()
     {
-        _ball = GameObject.FindGameObjectWithTag("Ball");
         _final = GameObject.FindGameObjectWithTag("Final");
-
+        
 
     }
 
-    // Update is called once per frame
     void Update()
     {
+        if (_ball == null)
+        {
+            GetBallReference();
+        }
+
         if (transform.position.y >= _ball.transform.position.y)
         {
             Destroy(gameObject);
             ScoreController.Instance.addScore(PlayerPrefs.GetInt("Level",0));  //addscore according to level value
-            GameManager.Instance.SetGameProgressBar(1/26f);  //ring amount
+            InGameCanvasController.Instance.SetGameProgressBar(1/26f); //ring amount
 
-            BallController.Instance._perfectRingPass += 1;
+            BallController.Instance.PerfectRingPass += 1;
+            InGameCanvasController.Instance.SetComboText(BallController.Instance.PerfectRingPass);
 
         }
+    }
+
+    public void GetBallReference()
+    {
+        _ball = GameManager.Instance.CurrentBall;
     }
 
 

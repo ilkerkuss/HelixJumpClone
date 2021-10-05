@@ -18,29 +18,23 @@ public class ButtonController : MonoBehaviour
 
     public void OnClickPauseGame()
     {
-        if (GameManager.Instance.GetIsGamePaused())
+        if (GameManager.Instance.GameState == GameManager.GameStates.IsGamePaused)
         {
-            Time.timeScale = 1;
-            GameManager.Instance.SetIsGamePaused(false);
-            AudioController.Instance.PlaySound("ButtonSound");
+            GameManager.Instance.GameState = GameManager.GameStates.IsGamePlaying;
             AudioController.Instance.UnMuteSounds();
         }
         else
         {
-            Time.timeScale = 0;
-            GameManager.Instance.SetIsGamePaused(true);
-            AudioController.Instance.PlaySound("ButtonSound");
+            GameManager.Instance.GameState = GameManager.GameStates.IsGamePaused;
             AudioController.Instance.MuteSounds();
-
         }
-        
+        AudioController.Instance.PlaySound("ButtonSound");
     }
 
     public void OnClickMute()
     {
         if (!GameManager.Instance.GetIsGameMuted())
         {
-            //AudioController.Instance.StopSound("BackgroundSound");
             GameManager.Instance.SetIsGameMuted(true);
             AudioController.Instance.MuteSounds();
 
@@ -51,27 +45,25 @@ public class ButtonController : MonoBehaviour
             AudioController.Instance.UnMuteSounds();
         }
         AudioController.Instance.PlaySound("ButtonSound");
-        
 
-        
     }
 
     public void OnClickReplayGame()
     {
         GameManager.Instance.RestartGame();
-        AudioController.Instance.PlaySound("ButtonSound");
 
+        AudioController.Instance.PlaySound("ButtonSound");
     }
 
     public void OnClickStartGame()
     {
         GameManager.Instance.TapToStart();
 
+
     }
 
     public void OnClickPlayGame()
     {
-        GameManager.Instance.CloseHomeScreen();
         GameManager.Instance.RestartGame();
     }
 }

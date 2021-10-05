@@ -4,26 +4,36 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
+    public static CameraController Instance;
 
-    private Transform _ball;
-
-    private Vector3 _offset;
-
+    private Vector3 _offset = new Vector3(0, 3, -8.75f);
     private float _smoothnessSpeed;
 
-    // Start is called before the first frame update
+    public BallController Target;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
     void Start()
     {
-        _ball = GameObject.FindGameObjectWithTag("Ball").transform;
-
         _smoothnessSpeed = 0.1f;
-        _offset = transform.position - _ball.transform.position;
+        
     }
 
-    // Update is called once per frame
+
     void Update()
     {
-        Vector3 newPos = Vector3.Lerp(transform.position,_offset + _ball.transform.position,_smoothnessSpeed);
-        transform.position = newPos;
+        if(Target != null)
+        {
+            Vector3 newPos = Vector3.Lerp(transform.position, _offset + Target.transform.position, _smoothnessSpeed);
+            transform.position = newPos;
+        }
+       
+    }
+
+    public void SetTarget(BallController Ball)
+    {
+        Target = Ball; 
     }
 }

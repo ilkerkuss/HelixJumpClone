@@ -30,7 +30,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5654279634374870889}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 15, z: -1.25}
+  m_LocalPosition: {x: 0, y: 14.996076, z: -1.25}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children: []
   m_Father: {fileID: 0}
@@ -113,7 +113,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 122
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &5654279634374870887
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,8 +126,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7620f986549946c48a76a4d9f7d2f36b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  BallPosition: {x: 0, y: 0, z: 0}
   _jumpForce: 50
   _splashPrefab: {fileID: 4757958901267224135, guid: 1b33b06f1833947449ca2c3365c5565e, type: 3}
+  _perfectRingPass: 0
 --- !u!96 &5654279634374870880
 TrailRenderer:
   serializedVersion: 2
